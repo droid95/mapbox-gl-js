@@ -181,7 +181,6 @@ function updateLineLabels(bucket: SymbolBucket,
 
         const fontSize = symbolSize.evaluateSizeForFeature(sizeData, partiallyEvaluatedSize, symbol);
         const pitchScaledFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
-            fontSize / perspectiveRatio;
 
         const tileAnchorPoint = new Point(symbol.anchorX, symbol.anchorY);
         const transformedTileAnchor = project(tileAnchorPoint, labelPlaneMatrix);

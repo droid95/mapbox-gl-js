@@ -8,8 +8,6 @@ void main() {
     float alpha = 0.25 * min(v_perspective_ratio, 1.0);
     float stroke_radius = 0.85 * max(v_perspective_ratio, 1.0);
 
-    vec4 test = gl_FragCoord;
-
     float distance_to_center = length(v_extrude) ;
     float distance_to_edge = abs(distance_to_center - v_radius );
     float opacity_t = smoothstep(-stroke_radius, 0.0, -distance_to_edge);

@@ -163,6 +163,7 @@ type TileLayerParameters = {
     layout: any,
     posMatrix: mat4,
     textLabelPlaneMatrix: mat4,
+    labelToScreenMatrix: mat4,
     scale: number,
     textPixelRatio: number,
     holdingForFade: boolean,
@@ -232,11 +233,28 @@ export class Placement {
 
         const posMatrix = this.transform.calculatePosMatrix(tile.tileID.toUnwrapped());
 
+        const pitchWithMap = layout.get('text-pitch-alignment') === 'map';
+        const rotateWithMap = layout.get('text-rotation-alignment') === 'map';
+        const pixelsToTiles = pixelsToTileUnits(tile, 1, this.transform.zoom);
+
         const textLabelPlaneMatrix = projection.getLabelPlaneMatrix(posMatrix,
-                layout.get('text-pitch-alignment') === 'map',
-                layout.get('text-rotation-alignment') === 'map',
+                pitchWithMap,
+                rotateWithMap,
                 this.transform,
-                pixelsToTileUnits(tile, 1, this.transform.zoom));
+                pixelsToTiles);
+
+        let labelToScreenMatrix = null;
+
+        if (pitchWithMap) {
+            const glMatrix = projection.getGlCoordMatrix(
+                posMatrix,
+                pitchWithMap,
+                rotateWithMap,
+                this.transform,
+                pixelsToTiles);
+
+            labelToScreenMatrix = mat4.multiply([], this.transform.labelPlaneMatrix, glMatrix);
+        }
 
         // As long as this placement lives, we have to hold onto this bucket's
         // matching FeatureIndex/data for querying purposes
@@ -253,6 +271,7 @@ export class Placement {
             layout,
             posMatrix,
             textLabelPlaneMatrix,
+            labelToScreenMatrix,
             scale,
             textPixelRatio,
             holdingForFade: tile.holdingForFade(),
@@ -335,6 +354,7 @@ export class Placement {
             layout,
             posMatrix,
             textLabelPlaneMatrix,
+            labelToScreenMatrix,
             scale,
             textPixelRatio,
             holdingForFade,
@@ -563,6 +583,7 @@ export class Placement {
                         fontSize,
                         posMatrix,
                         textLabelPlaneMatrix,
+                        labelToScreenMatrix,
                         showCollisionBoxes,
                         pitchWithMap,
                         collisionGroup.predicate,

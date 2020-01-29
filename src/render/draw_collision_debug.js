@@ -9,6 +9,7 @@ import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
 import CullFaceMode from '../gl/cull_face_mode';
 import {collisionUniformValues, collisionUniformValuesTemp} from './program/collision_program';
+import * as symbolProjection from '../symbol/projection';
 
 import {CollisionCircleLayoutArray, StructArrayLayout4i8, StructArrayLayout2i4, StructArrayLayout3ui6} from '../data/array_types'
 import {collisionCircleLayoutTemp} from '../data/bucket/symbol_attributes';
@@ -119,21 +120,15 @@ function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, 
             posMatrix = painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor);
         }
 
+        // const s = pixelsToTileUnits(tile, 1, painter.transform.zoom);
+        // const rotateWithMap = layer.layout.get('icon-rotation-alignment');
+        // const pitchWithMap = layer.layout.get('icon-pitch-alignment');
+        // const glCoordMatrix = symbolProjection.getGlCoordMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
+
         // Create a transformation matrix that will transform points from screen space that was used
         // during placement logic to the current screen space
         const batchInvTransform = mat4.multiply([], bucket.invProjMatCircles, painter.transform.glCoordMatrix);
         const batchTransform = posMatrix;// painter.transform.projMatrix.slice();
-
-        //batchTransform[12] = batchTransform[13] = 0.0;
-
-        //mat4.multiply(batchProjMatrix, painter.transform.projMatrix, tilesPerMatrix[key].matrix);
-        //mat4.multiply(batchProjMatrix, batchProjMatrix, painter.transform.glCoordMatrix);
-
-        //mat4.multiply(batchProjMatrix, painter.transform.projMatrix, painter.transform.invProjMatrix);
-        //mat4.multiply(batchProjMatrix, batchProjMatrix, painter.transform.glCoordMatrix);
-
-        //mat4.multiply(batchProjMatrix, painter.transform.invProjMatrix, painter.transform.glCoordMatrix);
-        //mat4.multiply(batchProjMatrix, painter.transform.projMatrix, batchProjMatrix);
 
         let batchQuadIdx = 0;
         let quadOffset = 0;

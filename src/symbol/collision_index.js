@@ -179,6 +179,7 @@ class CollisionIndex {
                           fontSize: number,
                           posMatrix: mat4,
                           labelPlaneMatrix: mat4,
+                          labelToScreenMatrix?: mat4,
                           showCollisionCircles: boolean,
                           pitchWithMap: boolean,
                           collisionGroupPredicate?: any,
@@ -186,7 +187,12 @@ class CollisionIndex {
                           lineHeight): { circles: Array<number>, offscreen: boolean, collisionDetected: boolean } {
         const placedCollisionCircles = [];
 
-        const projectedAnchor = this.projectAnchor(posMatrix, symbol.anchorX, symbol.anchorY);
+        const perspectiveRatio = this.projectAnchor(posMatrix, symbol.anchorX, symbol.anchorY, pitchWithMap).perspectiveRatio;
+        const labelPlaneFontSize = pitchWithMap ? fontSize / perspectiveRatio : fontSize * perspectiveRatio;
+        const screenFontSize = fontSize * perspectiveRatio;
+
+        const labelPlaneFontScale = labelPlaneFontSize / 24;
+        const screenFontScale = screenFontSize / 24;
 
         const tileUnitAnchorPoint = new Point(symbol.anchorX, symbol.anchorY);
         // projection.project generates NDC coordinates, as opposed to the
@@ -195,12 +201,12 @@ class CollisionIndex {
         projection.project(tileUnitAnchorPoint, labelPlaneMatrix).point;
 
         const projectionCache = {};
-        const fontScale = fontSize * projectedAnchor.perspectiveRatio / 24;
-        const lineOffsetX = symbol.lineOffsetX * fontScale;
-        const lineOffsetY = symbol.lineOffsetY * fontScale;
+        //const fontScale = pitchScaledFontSize / 24;
+        const lineOffsetX = symbol.lineOffsetX * labelPlaneFontScale;
+        const lineOffsetY = symbol.lineOffsetY * labelPlaneFontScale;
 
         const firstAndLastGlyph = projection.placeFirstAndLastGlyph(
-            fontScale,
+            labelPlaneFontScale,
             glyphOffsetArray,
             lineOffsetX,
             lineOffsetY,
@@ -225,7 +231,7 @@ class CollisionIndex {
                 return circles.length - 1;
             };
 
-            const radius = (lineHeight * fontScale + 2 * ppp) / 2;
+            const radius = (lineHeight * screenFontScale + 2 * ppp) / 2;
 
             let lastPlacedCircle = null;
 
@@ -236,7 +242,12 @@ class CollisionIndex {
             const first = firstAndLastGlyph.first;
             const last = firstAndLastGlyph.last;
 
-            const projectedPath = first.path.slice(1).reverse().concat(last.path.slice(1));
+            let projectedPath = first.path.slice(1).reverse().concat(last.path.slice(1));
+
+            // Convert to screen space?
+            if (labelToScreenMatrix) {
+                projectedPath = projectedPath.map(p => projection.project(p, labelToScreenMatrix).point);
+            }
 
             for (let segIdx = 0; segIdx < projectedPath.length - 1; segIdx++) {
                 const startIdx = segIdx;
@@ -396,7 +407,7 @@ class CollisionIndex {
         }
     }
 
-    projectAnchor(posMatrix: mat4, x: number, y: number) {
+    projectAnchor(posMatrix: mat4, x: number, y: number, pitchWithMap: boolean) {
         const p = [x, y, 0, 1];
         projection.xyTransformMat4(p, p, posMatrix);
         return {
