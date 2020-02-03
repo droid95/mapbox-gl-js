@@ -201,7 +201,6 @@ class CollisionIndex {
         projection.project(tileUnitAnchorPoint, labelPlaneMatrix).point;
 
         const projectionCache = {};
-        //const fontScale = pitchScaledFontSize / 24;
         const lineOffsetX = symbol.lineOffsetX * labelPlaneFontScale;
         const lineOffsetY = symbol.lineOffsetY * labelPlaneFontScale;
 
@@ -217,7 +216,7 @@ class CollisionIndex {
             lineVertexArray,
             labelPlaneMatrix,
             projectionCache,
-            /*return tile distance*/ true);
+            /* conservative offsets */true);
 
         let collisionDetected = false;
         let inGrid = false;
@@ -448,10 +447,21 @@ class CollisionIndex {
     isInsideGrid(x1: number, y1: number, x2: number, y2: number) {
         return x2 >= 0 && x1 < this.gridRightBoundary && y2 >= 0 && y1 < this.gridBottomBoundary;
     }
+
+    /*
+    * Returns a matrix for transforming collision shapes to the viewport coordinate space.
+    * Use this function to render e.g. collision circles on the screen.
+    *   example transformation: clipPos = glCoordMatrix * viewportMatrix * circle_pos
+    */
+    getViewportMatrix(): mat4 {
+        const m = mat4.identity([]);
+        mat4.translate(m, m, [-viewportPadding, -viewportPadding, 0.0]);
+        return m;
+    }
 }
 
-function markCollisionCircleUsed(collisionCircles: Array<number>, index: number, used: boolean) {
-    collisionCircles[index + 4] = used ? 1 : 0;
-}
+// function markCollisionCircleUsed(collisionCircles: Array<number>, index: number, used: boolean) {
+//     collisionCircles[index + 4] = used ? 1 : 0;
+// }
 
 export default CollisionIndex;

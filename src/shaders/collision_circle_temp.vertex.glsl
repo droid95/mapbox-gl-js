@@ -13,15 +13,15 @@ varying float v_perspective_ratio;
 varying float v_collision;
 
 void main() {  
-    float vertexIdx = mod(a_idx.x, 4.0);
+    highp float vertexIdx = mod(a_idx.x, 4.0);
 
     // Deduce vertex position and quad index from vertex index
     vec4 quadVec = u_quads[int(floor(a_idx.x / 4.0))];
 
     // 100 = hard-coded padding used in collision logic
-    vec2 quadCenterPos = quadVec.xy - vec2(100.0);
-    float radius = quadVec.z;
-    float collision = quadVec.w;
+    vec2 quadCenterPos = quadVec.xy;
+    highp float radius = quadVec.z;
+    highp float collision = quadVec.w;
 
     vec2 quadVertexOffset = vec2(
         mix(-1.0, 1.0, float(vertexIdx >= 2.0)),
@@ -29,16 +29,14 @@ void main() {
 
     vec2 quadVertexExtent = quadVertexOffset * radius;
 
-    //vec4 clipPos = u_matrix * vec4(quadCenterPos.xy, quadCenterPos.z / 16384.0, 1.0);
-
-    // Project center position to tile space to reconstruct the depth information
+    // Project center position to tile space to reconstruct depth information
     vec4 rayStart = u_invMatrix * vec4(quadCenterPos, -1.0, 1.0);
     vec4 rayEnd   = u_invMatrix * vec4(quadCenterPos,  1.0, 1.0);
 
     rayStart.xyz /= rayStart.w;
     rayEnd.xyz   /= rayEnd.w;
 
-    float t = (0.0 - rayStart.z) / (rayEnd.z - rayStart.z);
+    highp float t = (0.0 - rayStart.z) / (rayEnd.z - rayStart.z);
 
     vec3 tilePos = mix(rayStart.xyz, rayEnd.xyz, t);
     vec4 clipPos = u_matrix * vec4(tilePos, 1.0);

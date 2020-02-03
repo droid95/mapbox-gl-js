@@ -665,18 +665,12 @@ export class Placement {
                         placedGlyphCircles.circles[i + 2],              // radius
                         placedGlyphCircles.collisionDetected ? 1 : 0,   // collisionDetected-flag
                     );
-                    //bucket.collisionCircleArrayTemp.emplaceBack()
-                    //bucket.collisionCircleArrayTemp.push(placedGlyphCircles.circles[i + 0]);
-                    //bucket.collisionCircleArrayTemp.push(placedGlyphCircles.circles[i + 1]);
-                    //bucket.collisionCircleArrayTemp.push(placedGlyphCircles.circles[i + 2]);
-                    //bucket.collisionCircleArrayTemp.push(placedGlyphCircles.collisionDetected ? 1 : 0);
 
-                    //bucket.posMatrixCircles = posMatrix;
-
-                    //bucket.invProjMatCircles[12] = 0;
-                    //bucket.invProjMatCircles[13] = 0;
-
-                    bucket.invProjMatCircles = mat4.invert([], posMatrix);
+                    // Store viewport and inverse projection matrices that were used during this placement
+                    //bucket.invProjMatCircles = mat4.identity([]);
+                    mat4.invert(bucket.placementInvProjMatrix, posMatrix);
+                    bucket.placementViewportMatrix = this.collisionIndex.getViewportMatrix();
+                    //mat4.multiply(bucket.invProjMatCircles, bucket.invProjMatCircles, this.collisionIndex.getViewportMatrix());
                 }
             }
 

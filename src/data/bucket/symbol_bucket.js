@@ -40,6 +40,7 @@ import EvaluationParameters from '../../style/evaluation_parameters';
 import Formatted from '../../style-spec/expression/types/formatted';
 import ResolvedImage from '../../style-spec/expression/types/resolved_image';
 import {plugin as globalRTLTextPlugin, getRTLTextPluginStatus} from '../../source/rtl_text_plugin';
+import {mat4} from 'gl-matrix';
 
 import type {
     Bucket,
@@ -330,6 +331,8 @@ class SymbolBucket implements Bucket {
     featureSortOrder: Array<number>;
 
     collisionCircleArrayTemp: StructArrayLayout4i8;
+    placementInvProjMatrix: mat4;
+    placementViewportMatrix: mat4;
 
     text: SymbolBuffers;
     icon: SymbolBuffers;
@@ -359,6 +362,8 @@ class SymbolBucket implements Bucket {
         this.sortKeyRanges = [];
 
         this.collisionCircleArrayTemp = new StructArrayLayout4i8();
+        this.placementInvProjMatrix = mat4.identity([])
+        this.placementViewportMatrix = mat4.identity([]);
 
         const layer = this.layers[0];
         const unevaluatedLayoutValues = layer._unevaluatedLayout._values;

@@ -98,7 +98,6 @@ function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, 
     // We need to know the projection matrix that was used for projecting collision circles to the screen
     // This might vary between buckets as the symbol placement is a continous process. For improved rendering
     // performance circles with same projection matrix are batched together
-    //const tilesPerMatrix = {};
 
     // Render circle arrays grouped by projection matrices. Blue circles and collided red circles
     // will be rendered in separate batches
@@ -120,15 +119,13 @@ function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, 
             posMatrix = painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor);
         }
 
-        // const s = pixelsToTileUnits(tile, 1, painter.transform.zoom);
-        // const rotateWithMap = layer.layout.get('icon-rotation-alignment');
-        // const pitchWithMap = layer.layout.get('icon-pitch-alignment');
-        // const glCoordMatrix = symbolProjection.getGlCoordMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
-
         // Create a transformation matrix that will transform points from screen space that was used
         // during placement logic to the current screen space
-        const batchInvTransform = mat4.multiply([], bucket.invProjMatCircles, painter.transform.glCoordMatrix);
-        const batchTransform = posMatrix;// painter.transform.projMatrix.slice();
+        const batchInvTransform = mat4.create();
+        const batchTransform = posMatrix;
+        
+        mat4.mul(batchInvTransform, bucket.placementInvProjMatrix, painter.transform.glCoordMatrix);
+        mat4.mul(batchInvTransform, batchInvTransform, bucket.placementViewportMatrix);
 
         let batchQuadIdx = 0;
         let quadOffset = 0;
